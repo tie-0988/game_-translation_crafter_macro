@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8" />
+<title>FF14 クラフターマクロ変換（wait保持・15行区切り）</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 900px; margin: 24px auto; line-height: 1.6; }
+  textarea { width: 100%; min-height: 180px; }
+  pre { background:#f6f6f6; padding:12px; white-space:pre-wrap; }
+  button { padding: 8px 12px; cursor: pointer; margin-top: 6px; }
+  .out { border: 1px solid #ddd; border-radius: 6px; padding: 12px; margin-top: 20px; }
+</style>
+
+<h1>FF14 クラフターマクロ：英語→日本語＋&lt;wait.n&gt;保持＋15行区切り</h1>
+
+<textarea id="input" placeholder='/ac "Reflect" <wait.3>
+/ac "Basic Synthesis" <wait.2>'></textarea>
+<br>
+<button id="run">変換する</button>
+<button id="copyAll">全部コピー</button>
+
+<div id="results"></div>
+
+<script>
+// ===== 英→日 対応表 =====
+const skillMap = {
+  // 基本
+  "Basic Synthesis": "作業",
+  "Basic Touch": "加工",
+  "Standard Synthesis": "中級作業",
+  "Standard Touch": "中級加工",
+  "Advanced Touch": "上級加工",
+  "Careful Synthesis": "模範作業",
+  "Rapid Synthesis": "突貫作業",
+  "Hasty Touch": "突貫加工",
+  "Delicate Synthesis": "精密作業",
+  "Prudent Synthesis": "倹約作業",
+
+  // 強化・維持
+  "Inner Quiet": "インナークワイエット",
+  "Manipulation": "マニピュレーション",
+  "Waste Not": "倹約",
+  // Waste Not IIは日本語だと長期倹約に該当するスキルになるので倹約IIにはしない
+  "Waste Not II": "長期倹約",
+  "Veneration": "ヴェネレーション",
+  "Innovation": "イノベーション",
+  "Great Strides": "グレートストライド",
+  "Observe": "経過観察",
+  
+
+  // 回復・耐久
+  "Master's Mend": "マスターズメンド",
+　"Immaculate Mend": "パーフェクトメンド",
+
+  // 上位系
+  "Byregot's Blessing": "ビエルゴの祝福",
+  "Preparatory Touch": "下地加工",
+  "Prudent Touch": "倹約加工",
+  "Patient Touch": "集中加工",
+  "Groundwork": "下地作業",
+  "Intensive Synthesis": "集中作業",
+  "Muscle Memory": "確信",
+  "Reflect": "真価",
+  "Trained Eye": "匠の早業",
+  "Trained Perfection": "匠の絶技",
+  "Trained Finesse": "匠の神業",
+
+};
+
+// ※入力正規化（スマートクォート/全角スペース対策）
+function normalizeInput(text) {
+  return text
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/\u3000/g, ' ')
+    .replace(/[ \t\u00A0]+$/gm, '');
+}
+
+// 1行変換：/ac or /action、"有無"、waitのスペース有無ぜんぶOK。末尾は丸ごと保持
+function translateLine(line) {
+  // 例: /ac "Reflect" <wait.3>
+  //     /ac "Basic Synthesis"<wait.2>
+  //     /action Reflect    <wait.10>
+  return line.replace(
+    /(\/a(?:c|ction)\s+)(?:"([^"]+)"|([^\s<]+(?:\s[^\s<]+)*))(.*)$/i,
+    (m, prefix, quotedSkill, bareSkill, tail) => {
+      const skill = quotedSkill || bareSkill || "";
+      const jp = skillMap[skill] || skill; // 未登録は原文（引用符は外す）
+      return `${prefix}${jp}${tail || ""}`;
+    }
+  );
+}
+
+function splitLines(text){
+  return normalizeInput(text).split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+}
+
+// 14行コマンド + 15行目にecho（途中は「次へ」、最後は「完成」）
+function splitWithEcho(lines){
+  const PAYLOAD = 14, MAX = 15;
+  const chunks = [];
+  for (let i = 0; i < lines.length; i += PAYLOAD) {
+    chunks.push(lines.slice(i, i + PAYLOAD));
+  }
+  return chunks.map((chunk, idx) => {
+    const isLast = idx === chunks.length - 1;
+    const echo = isLast ? `/echo 完成 <se.12>` : `/echo 次へ <se.12>`;
+    if (chunk.length < MAX) chunk.push(echo); else chunk[MAX - 1] = echo;
+    return chunk.slice(0, MAX);
+  });
+}
+
+document.getElementById('run').addEventListener('click', () => {
+  const raw = document.getElementById('input').value || '';
+  const jpLines = splitLines(raw).map(translateLine);
+
+  const chunks = (jpLines.length >= 15)
+    ? splitWithEcho(jpLines)
+    : [ [...jpLines, `/echo 完成 <se.12>`].slice(0,15) ];
+
+  const results = document.getElementById('results');
+  results.innerHTML = '';
+
+  window.__allText = chunks.map((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'out';
+
+    const title = document.createElement('strong');
+    title.textContent = `マクロ ${i + 1}（${c.length}行）`;
+
+    const pre = document.createElement('pre');
+    // wait消さないために textContent を使用
+    pre.textContent = c.join('\n');
+
+    div.appendChild(title);
+    div.appendChild(document.createElement('div'));
+    div.appendChild(pre);
+    results.appendChild(div);
+
+    return c.join('\n');
+  }).join('\n\n');
+});
+
+document.getElementById('copyAll').addEventListener('click', async () => {
+  const all = window.__allText || '';
+  if (!all) return;
+  try {
+    await navigator.clipboard.writeText(all);
+    const btn = document.getElementById('copyAll');
+    btn.textContent = 'コピーした！';
+    setTimeout(() => (btn.textContent = '全部コピー'), 1200);
+  } catch {
+    // HTTPSじゃない等で失敗したらフォールバック
+    const ta = document.createElement('textarea');
+    ta.value = all; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  }
+});
+</script>
+</html>
