@@ -1,0 +1,52 @@
+name: Phase 0 - Build and deploy Raphael Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install upstream Rust toolchain
+        working-directory: raphael
+        run: rustup show active-toolchain
+      - name: Install Trunk 0.21.14
+        run: |
+          curl --fail --location --retry 3 https://github.com/trunk-rs/trunk/releases/download/v0.21.14/trunk-x86_64-unknown-linux-gnu.tar.gz -o "$RUNNER_TEMP/trunk.tar.gz"
+          tar xzf "$RUNNER_TEMP/trunk.tar.gz" -C "$HOME/.cargo/bin" trunk
+      - name: Build unchanged Raphael web app
+        working-directory: raphael
+        run: bash raphael-gui/build-web.sh --public-url /game_-translation_crafter_macro/raphael/ --locked
+      - name: Assemble existing root pages and Raphael
+        run: python3 scripts/assemble-pages.py
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - name: Deploy combined Pages site
+        id: deployment
+        uses: actions/deploy-pages@v4
