@@ -1,0 +1,52 @@
+[workspace]
+members = [
+    "raphael-sim",
+    "raphael-solver",
+    "raphael-data",
+    "raphael-data-updater",
+    "raphael-cli",
+    "raphael-translations",
+    "raphael-gui",
+]
+resolver = "2"
+
+[workspace.lints]
+clippy.assigning_clones = "warn"
+clippy.single_char_pattern = "warn"
+clippy.return_self_not_must_use = "warn"
+clippy.format_push_string = "warn"
+clippy.ref_option = "warn"
+clippy.default_trait_access = "warn"
+clippy.explicit_iter_loop = "warn"
+clippy.unnecessary_semicolon = "warn"
+clippy.redundant_closure_for_method_calls = "warn"
+clippy.use_self = "warn"
+
+[workspace.dependencies]
+raphael-sim = { path = "raphael-sim" }
+raphael-solver = { path = "raphael-solver" }
+raphael-data = { path = "raphael-data" }
+raphael-translations = { path = "raphael-translations" }
+rayon = "1.11"
+serde = { version = "1.0", features = ["derive"] }
+toml_edit = "0.23"
+log = { version = "0.4", features = ["std"] }
+web-time = "1.1.0"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+overflow-checks = false
+codegen-units = 1
+panic = "abort"
+
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+debug-assertions = true
+
+[profile.test]
+opt-level = 3
+lto = "thin"
+overflow-checks = true
+
