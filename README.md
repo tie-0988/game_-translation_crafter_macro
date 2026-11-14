@@ -36,14 +36,14 @@ No worker is registered at the existing root pages' scope.
 
 - Confirm the main workflow's build and deployment succeed.
 - Open `/raphael/` in a normal, fresh browser profile with Service Workers enabled;
-confirm the initial automatic reload and that the English upstream app starts. 
+  confirm the initial automatic reload and that the English upstream app starts.
 - In DevTools confirm `crossOriginIsolated === true`, SharedArrayBuffer is
-available, and the worker scope ends in `/raphael/`. 
+  available, and the worker scope ends in `/raphael/`.
 - Run a small solve, confirm completion and macro output; check icons/fonts and
-network/console errors, then reload and revisit the page. 
+  network/console errors, then reload and revisit the page.
 - Confirm the root hub and existing macro replacement HTML still open.
 - Check another browser if available. Unsupported/private browsing modes may
-prevent Service Worker registration; failure diagnostics should remain visible. 
+  prevent Service Worker registration; failure diagnostics should remain visible.
 
 Live Pages deployment and real-browser startup are intentionally pending merge
 and むーちゃん's verification. A successful build alone does not prove startup.
