@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FF14 クラフトマクロ日本語ハブ（Raphael＋変換）</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 24px auto; padding: 0 12px; line-height: 1.6; color: #222; }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.15rem; margin-top: 28px; border-left: 6px solid #7aa2f7; padding-left: 8px; }
+  textarea { width: 100%; min-height: 180px; box-sizing: border-box; }
+  pre { background:#f6f6f6; padding:12px; white-space:pre-wrap; margin: 8px 0; }
+  button { padding: 8px 12px; cursor: pointer; margin: 6px 6px 6px 0; }
+  .out { border: 1px solid #ddd; border-radius: 6px; padding: 12px; margin-top: 16px; }
+  .note { background:#f0f4ff; border-radius: 6px; padding: 10px 14px; }
+  iframe.raphael { width: 100%; height: 980px; border: 1px solid #ccc; border-radius: 6px; background: #fff; }
+  table.glossary { border-collapse: collapse; width: 100%; }
+  table.glossary th, table.glossary td { border: 1px solid #ddd; padding: 4px 8px; text-align: left; font-size: 0.95rem; }
+  table.glossary th { background: #f6f6f6; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; font-weight: bold; }
+  .small { font-size: 0.9rem; color: #555; }
+</style>
+
+<h1>FF14 クラフトマクロ日本語ハブ</h1>
+<p class="note">
+  上半分が計算サイト「Raphael」（公式・英語）、下半分が日本語変換ツールです。<br>
+  Raphaelは公式そのままを埋め込んでいるので、ゲームのパッチ対応は自動で最新になります。<br>
+  英語で迷ったら、このページの「使い方」と「用語表」を見てください。
+</p>
+
+<h2>使い方</h2>
+<ol>
+  <li>下のRaphaelで、作りたいレシピを検索して選ぶ</li>
+  <li>自分のステータス（作業精度・加工精度・CP）と、食事などのバフを入力する</li>
+  <li>「Solve」（計算）を押して、手順を出してもらう</li>
+  <li>出てきたマクロ（英語）をコピーする</li>
+  <li>このページ下半分の変換ツールに貼って「変換する」を押す</li>
+  <li>日本語になったマクロを、1つずつコピーしてゲームに登録する</li>
+</ol>
+
+<details>
+  <summary>用語表（Raphaelの英語 → 日本語）</summary>
+  <table class="glossary">
+    <tr><th>英語</th><th>意味</th><th>英語</th><th>意味</th></tr>
+    <tr><td>Recipe</td><td>レシピ</td><td>Search</td><td>検索</td></tr>
+    <tr><td>Craftsmanship</td><td>作業精度</td><td>Control</td><td>加工精度</td></tr>
+    <tr><td>CP</td><td>CP（そのまま）</td><td>Level</td><td>レベル</td></tr>
+    <tr><td>Durability</td><td>耐久</td><td>Difficulty</td><td>難易度（必要な工数）</td></tr>
+    <tr><td>Quality</td><td>品質</td><td>Progress</td><td>工数（進み具合）</td></tr>
+    <tr><td>Initial Quality</td><td>初期品質</td><td>Recipe Level</td><td>レシピレベル</td></tr>
+    <tr><td>Food</td><td>食事</td><td>Medicine / Potion</td><td>薬</td></tr>
+    <tr><td>Specialist</td><td>スペシャリスト</td><td>Solve / Solver</td><td>計算する／計算機能</td></tr>
+    <tr><td>Rotation</td><td>手順（スキル回し）</td><td>Macro</td><td>マクロ</td></tr>
+    <tr><td>Copy</td><td>コピー</td><td>Settings</td><td>設定</td></tr>
+    <tr><td>Add</td><td>追加</td><td>Remove / Delete</td><td>削除</td></tr>
+    <tr><td>Buffs</td><td>バフ</td><td>Job / Class</td><td>クラス（木工師など）</td></tr>
+  </table>
+</details>
+
+<h2>Raphael（公式・英語）</h2>
+<p class="small">
+  読み込みに少し時間がかかることがあります。うまく表示されないときは
+  <a href="https://www.raphael-xiv.com/" target="_blank" rel="noopener">Raphaelを別タブで開く</a>
+  から使ってください（出てきたマクロはこのページの変換ツールに貼ればOKです）。
+</p>
+<iframe class="raphael" src="https://www.raphael-xiv.com/" title="Raphael | FFXIV Crafting Solver" allow="clipboard-read; clipboard-write"></iframe>
+
+<h2>マクロ変換（英語 → 日本語＋15行区切り）</h2>
+<p class="small">
+  Raphaelが出したマクロを貼って「変換する」を押すと、スキル名が日本語になり、
+  14行＋エコー（次へ／完成 &lt;se.12&gt;）の15行ごとに分割されます。各マクロに個別のコピーボタンが付きます。
+</p>
+
+<textarea id="input" placeholder='/ac "Reflect" <wait.3>
+/ac "Basic Synthesis" <wait.2>'></textarea>
+<br>
+<button id="run">変換する</button>
+<button id="paste">貼り付け</button>
+<button id="clear">クリア</button>
+<button id="copyAll">全部コピー</button>
+
+<div id="results"></div>
+
+<p class="small" style="margin-top:32px">
+  Raphael | FFXIV Crafting Solver — by KonaeAkira
+  （<a href="https://github.com/KonaeAkira/raphael-rs" target="_blank" rel="noopener">GitHub</a>、Apache License 2.0）。
+  このページは個人利用のための非公式ハブです。変換ツールの対応表は利用者自身が作成したものです。
+</p>
+
+<script>
+// ===== 英→日 対応表 =====
+const skillMap = {
+  // 基本
+  "Basic Synthesis": "作業",
+  "Basic Touch": "加工",
+  "Standard Synthesis": "中級作業",
+  "Standard Touch": "中級加工",
+  "Advanced Touch": "上級加工",
+  "Careful Synthesis": "模範作業",
+  "Rapid Synthesis": "突貫作業",
+  "Hasty Touch": "突貫加工",
+  "Delicate Synthesis": "精密作業",
+  "Prudent Synthesis": "倹約作業",
+
+  // 強化・維持
+  "Inner Quiet": "インナークワイエット",
+  "Manipulation": "マニピュレーション",
+  "Waste Not": "倹約",
+  // Waste Not IIは日本語だと長期倹約に該当するスキルになるので倹約IIにはしない
+  "Waste Not II": "長期倹約",
+  "Veneration": "ヴェネレーション",
+  "Innovation": "イノベーション",
+  "Great Strides": "グレートストライド",
+  "Observe": "経過観察",
+
+  // 回復・耐久
+  "Master's Mend": "マスターズメンド",
+  "Immaculate Mend": "パーフェクトメンド",
+
+  // 上位系
+  "Byregot's Blessing": "ビエルゴの祝福",
+  "Preparatory Touch": "下地加工",
+  "Prudent Touch": "倹約加工",
+  "Patient Touch": "集中加工",
+  "Groundwork": "下地作業",
+  "Intensive Synthesis": "集中作業",
+  "Muscle Memory": "確信",
+  "Reflect": "真価",
+  "Trained Eye": "匠の早業",
+  "Trained Perfection": "匠の絶技",
+  "Trained Finesse": "匠の神業",
+
+  // 追加
+  "Precise Touch": "集中加工",
+  "Finishing Touches": "フィニッシュワーク",
+  "Tricks of the Trade": "秘訣",
+  "Careful Observation": "設計変更",
+  "Heart and Soul": "一心不乱",
+  "Refined Touch": "洗練加工",
+  "Daring Touch": "デアリングタッチ",
+  "Quick Innovation": "クイックイノベーション",
+};
+
+// ※入力正規化（スマートクォート/全角スペース対策）
+function normalizeInput(text) {
+  return text
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/　/g, ' ')
+    .replace(/[ \t ]+$/gm, '');
+}
+
+// 1行変換：/ac or /action、"有無"、waitのスペース有無ぜんぶOK。末尾は丸ごと保持
+function translateLine(line) {
+  return line.replace(
+    /(\/a(?:c|ction)\s+)(?:"([^"]+)"|([^\s<]+(?:\s[^\s<]+)*))(.*)$/i,
+    (m, prefix, quotedSkill, bareSkill, tail) => {
+      const skill = quotedSkill || bareSkill || "";
+      const jp = skillMap[skill] || skill; // 未登録は原文（引用符は外す）
+      return `${prefix}${jp}${tail || ""}`;
+    }
+  );
+}
+
+function splitLines(text){
+  return normalizeInput(text).split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+}
+
+// 14行コマンド + 15行目にecho（途中は「次へ」、最後は「完成」）
+function splitWithEcho(lines){
+  const PAYLOAD = 14, MAX = 15;
+  const chunks = [];
+  for (let i = 0; i < lines.length; i += PAYLOAD) {
+    chunks.push(lines.slice(i, i + PAYLOAD));
+  }
+  return chunks.map((chunk, idx) => {
+    const isLast = idx === chunks.length - 1;
+    const echo = isLast ? `/echo 完成 <se.12>` : `/echo 次へ <se.12>`;
+    if (chunk.length < MAX) chunk.push(echo); else chunk[MAX - 1] = echo;
+    return chunk.slice(0, MAX);
+  });
+}
+
+async function copyText(text, btn, doneLabel) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  }
+  if (btn) {
+    const orig = btn.textContent;
+    btn.textContent = doneLabel || 'コピーした！';
+    setTimeout(() => (btn.textContent = orig), 1200);
+  }
+}
+
+document.getElementById('run').addEventListener('click', () => {
+  const raw = document.getElementById('input').value || '';
+  const jpLines = splitLines(raw).map(translateLine);
+
+  const chunks = (jpLines.length >= 15)
+    ? splitWithEcho(jpLines)
+    : [ [...jpLines, `/echo 完成 <se.12>`].slice(0,15) ];
+
+  const results = document.getElementById('results');
+  results.innerHTML = '';
+
+  window.__allText = chunks.map((c, i) => {
+    const text = c.join('\n');
+    const div = document.createElement('div');
+    div.className = 'out';
+
+    const title = document.createElement('strong');
+    title.textContent = `マクロ ${i + 1}（${c.length}行）`;
+
+    const copyBtn = document.createElement('button');
+    copyBtn.textContent = 'このマクロをコピー';
+    copyBtn.addEventListener('click', () => copyText(text, copyBtn));
+
+    const pre = document.createElement('pre');
+    // wait消さないために textContent を使用
+    pre.textContent = text;
+
+    div.appendChild(title);
+    div.appendChild(document.createElement('div'));
+    div.appendChild(copyBtn);
+    div.appendChild(pre);
+    results.appendChild(div);
+
+    return text;
+  }).join('\n\n');
+});
+
+document.getElementById('copyAll').addEventListener('click', async (e) => {
+  const all = window.__allText || '';
+  if (!all) return;
+  await copyText(all, e.currentTarget);
+});
+
+document.getElementById('paste').addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById('input').value = text;
+  } catch {
+    alert('貼り付けできませんでした。入力欄をクリックして Ctrl+V で貼ってください。');
+  }
+});
+
+document.getElementById('clear').addEventListener('click', () => {
+  document.getElementById('input').value = '';
+  document.getElementById('results').innerHTML = '';
+  window.__allText = '';
+});
+</script>
+</html>
